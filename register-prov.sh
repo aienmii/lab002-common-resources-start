@@ -5,4 +5,5 @@ for ns in Microsoft.Compute Microsoft.Network Microsoft.Storage Microsoft.KeyVau
   Microsoft.OperationalInsights Microsoft.Insights Microsoft.EventGrid \
   Microsoft.CognitiveServices Microsoft.Cdn Microsoft.ManagedIdentity; do
   az provider register --namespace "$ns"
+  echo "$ns Registered "
 done
