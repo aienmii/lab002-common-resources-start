@@ -55,8 +55,21 @@ export TF_VAR_contact_emails='["imie.nazwisko@student.pk.edu.pl","drugi.adres@ex
 git clone <repository-url>
 cd lab002-common-resources
 
-# Inicjalizuj OpenTofu
-tofu init
+# Utwórz infrastrukturę lokalnie podczas pierwszego uruchomienia.
+# Backend Azure nie może być użyty przed utworzeniem Storage Account.
+tofu init -backend=false
+tofu fmt -check
+tofu validate
+tofu apply
+
+# Po udanym wdrożeniu przenieś stan do Storage Account.
+# Zastąp wartości zgodnie z własnym student_id i project.
+tofu init -migrate-state \
+  -backend-config="resource_group_name=rg-common-26" \
+  -backend-config="storage_account_name=sttfstate26${TF_VAR_student_id}" \
+  -backend-config="container_name=tfstate" \
+  -backend-config="key=2026/lab002-common-resources/terraform.tfstate" \
+  -backend-config="use_azuread_auth=true"
 ```
 
 #### 2. Wdróż Key Vault z kluczem szyfrującym
@@ -249,10 +262,14 @@ lab002-common-resources/
 ## Deployment
 
 ```bash
-# Pełny workflow
-tofu init
+# Pierwsze wdrożenie: utwórz Storage Account i kontener lokalnie.
+tofu init -backend=false
 tofu plan
 tofu apply
+
+# Następnie przenieś stan do Azure Storage Account zgodnie z instrukcją wyżej
+# i od tej pory używaj zwykłego:
+tofu init
 
 # Tylko Key Vault
 tofu apply -target=azurerm_key_vault.this

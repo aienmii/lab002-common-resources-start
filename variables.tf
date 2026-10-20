@@ -41,12 +41,11 @@ variable "location" {
   default     = "swedencentral"
 }
 
-variable "sops-encryption-key_name" {
-  description = "Nazwa klucza `Key Vault` używanego przez `SOPS` do szyfrowania sekretów."
+variable "sops_encryption_key_name" {
+  description = "Nazwa klucza Key Vault używanego przez SOPS do szyfrowania sekretów."
   type        = string
   default     = "sops-encryption-key"
 }
-
 variable "create_sops_key" {
   description = <<-EOT
   Jeśli `true`, provider utworzy klucz `Key Vault` 'sops-encryption-key` używany przez SOPS.

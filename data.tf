@@ -1,5 +1,5 @@
-# TODO: Dodaj data source subskrypcji (budżet, krok 2)
+# Subskrypcja Azure — krok 2 (budżety)
+data "azurerm_subscription" "current" {}
 
-# TODO: Dodaj data source client_config (Key Vault/SOPS, krok 3)
-
-# TODO: Dodaj data source klucza SOPS gdy create_sops_key=false (krok 3)
+# Konfiguracja klienta Azure — krok 3
+data "azurerm_client_config" "current" {}
