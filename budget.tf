@@ -8,21 +8,21 @@ resource "azurerm_consumption_budget_subscription" "this" {
   time_grain      = "Monthly"
 
   time_period {
-    start_date = "2026-10-01T00:00:00Z"
+    start_date = "2026-11-01T00:00:00Z"
     end_date   = "2027-01-01T00:00:00Z"
   }
 
   notification {
     enabled        = true
     threshold      = 70.0
-    operator       = "EqualTo"
+    operator       = "GreaterThan"
     contact_emails = var.contact_emails
   }
 
   notification {
     enabled        = true
     threshold      = 90.0
-    operator       = "EqualTo"
+    operator       = "GreaterThan"
     contact_emails = var.contact_emails
   }
 

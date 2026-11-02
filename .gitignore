@@ -59,3 +59,9 @@ terraform.rc
 
 # spakowany kod Functions
 tofu/**/*.zip
+
+# Terraform state, backups, and plans
+state-backup.json
+*.tfstate
+*.tfstate.*
+tfplan

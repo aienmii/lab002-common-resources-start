@@ -16,9 +16,12 @@ variable "common_resource_groups" {
   }))
   nullable = false
   default = {
-    common = { enabled = true, labs = "2-11" } # zasoby wspólne, trwałe
-
-    # TODO: Dodaj pozostałe grupy zasobów (krok 1)
+    common     = { enabled = true, labs = "2-11" }
+    basic      = { enabled = true, labs = "1-4" }
+    function   = { enabled = true, labs = "5-6" }
+    vm         = { enabled = true, labs = "7-9" }
+    advanced   = { enabled = true, labs = "10" }
+    industry40 = { enabled = true, labs = "11" }
   }
   validation {
     condition     = try(var.common_resource_groups["common"].enabled, false)
@@ -53,7 +56,7 @@ variable "create_sops_key" {
   EOT
   type        = bool
   nullable    = false
-  default     = false
+  default     = true
 }
 
 # Opcjonalne: objectId principal-a (np. użytkownika `devops` -- część opcjonalna labu), któremu
@@ -73,9 +76,9 @@ variable "contact_emails" {
   description = <<-EOT
   Adresy e-mail, na które trafią alerty budżetowe (jeden lub kilka). Najwygodniej ustawić
   raz w powłoce (Laboratorium 2), np.:
-  export TF_VAR_contact_emails='["imie.nazwisko@student.pk.edu.pl","drugi.adres@example.com"]'
+  export TF_VAR_contact_emails='["ianastasiia.bohatyr@student.pk.edu.pl","nastasiiabohatyr@gmail.com"]'
   EOT
-  default     = ["imie.nazwisko@student.pk.edu.pl", "drugi.adres@example.com"]
+  default     = ["anastasiia.bohatyr@student.pk.edu.pl", "nastasiiabohatyr@gmail.com"]
   type        = list(string)
   nullable    = false
   validation {

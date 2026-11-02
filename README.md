@@ -23,6 +23,30 @@ export TF_VAR_student_id=g14k01n123456
 export TF_VAR_contact_emails='["imie.nazwisko@student.pk.edu.pl","drugi.adres@example.com"]'
 ```
 
+### Azure Cloud Shell
+
+Azure Cloud Shell zawiera `az`, ale OpenTofu może nie być zainstalowane. W Bash
+Cloud Shell uruchom z katalogu repozytorium:
+
+```bash
+./scripts/install-opentofu.sh
+tofu version
+```
+
+Jeśli skrypt nie ma praw do uruchomienia, nadaj je jednorazowo:
+
+```bash
+chmod +x scripts/install-opentofu.sh
+./scripts/install-opentofu.sh
+```
+
+Następnie zaloguj się (jeśli sesja Cloud Shell nie ma aktywnego kontekstu):
+
+```bash
+az account show
+# az login
+```
+
 ## Użycie SOPS (Secrets OPerationS)
 
 ### Wymagania
@@ -80,10 +104,21 @@ tofu apply -target=azurerm_key_vault.this
 tofu apply -target=azurerm_key_vault_key.sops_encryption_key
 ```
 
+Po utworzeniu klucza skonfiguruj SOPS:
+
+```bash
+cp .sops.yaml.example .sops.yaml
+sed -i '' "s|<KEY_ID>|$(tofu output -raw sops_key_kid)|" .sops.yaml # macOS
+```
+
+Plik `.sops.yaml` jest lokalną konfiguracją i nie zawiera sekretów. Nie commituj
+niezaszyfrowanego `secrets.yaml`; commituj wyłącznie jego zaszyfrowaną wersję.
+
 #### 3. Przygotuj sekrety
 
 ```bash
-# Edytuj plik z sekretami (niezaszyfrowany)
+# Utwórz plik na podstawie przykładu i uzupełnij go lokalnie
+cp secrets.yaml.example secrets.yaml
 nano secrets.yaml
 ```
 
@@ -139,7 +174,7 @@ sops secrets.yaml
 
 # Zapisz i zamknij edytor
 
-# Zaktualizuj mapowanie w kv.tf jeśli potrzebne
+# Każdy klucz YAML staje się sekretem Key Vault; podkreślenia są zamieniane na myślniki.
 # Wdróż zmiany
 tofu apply
 ```
@@ -252,7 +287,7 @@ lab002-common-resources/
 ├── budget.tf               # Alerty budżetowe
 ├── kv.tf, sops.tf, rbac.tf # Key Vault, SOPS, uprawnienia
 ├── storage_account.tf      # Storage Account na stan labów (krok: Laboratorium 2)
-├── backend.tf              # zdalny backend (z szablonu; dodawany w Laboratorium 2)
+├── backend.tf.example      # szablon zdalnego backendu; aktywuj po pierwszym apply
 ├── variables.tf            # Zmienne projektu
 ├── versions.tf             # Providers (azurerm + sops)
 ├── locals.tf               # Wartości labu i lokalne zmienne
@@ -263,13 +298,19 @@ lab002-common-resources/
 
 ```bash
 # Pierwsze wdrożenie: utwórz Storage Account i kontener lokalnie.
-tofu init -backend=false
+# Nie kopiuj jeszcze backend.tf.example — Storage Account musi powstać najpierw.
+tofu init
 tofu plan
 tofu apply
 
-# Następnie przenieś stan do Azure Storage Account zgodnie z instrukcją wyżej
-# i od tej pory używaj zwykłego:
-tofu init
+# Po udanym wdrożeniu aktywuj backend i przenieś stan do Azure Storage.
+cp backend.tf.example backend.tf
+tofu init -migrate-state \
+  -backend-config="resource_group_name=rg-common-26" \
+  -backend-config="storage_account_name=sttfstate26${TF_VAR_student_id}" \
+  -backend-config="container_name=tfstate" \
+  -backend-config="key=2026/lab002-common-resources/terraform.tfstate" \
+  -backend-config="use_azuread_auth=true"
 
 # Tylko Key Vault
 tofu apply -target=azurerm_key_vault.this

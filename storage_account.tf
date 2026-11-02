@@ -1,8 +1,12 @@
+
 # Storage Account dla plików stanu (state) wszystkich labów -- jeden na rok kursu
 resource "azurerm_storage_account" "backend" {
-  name                     = local.common.st_tfs # sttfstate26<student_id>
-  resource_group_name      = azurerm_resource_group.common["common"].name
-  location                 = azurerm_resource_group.common["common"].location
+  name                = "sttfstate26152579" # Existing backend account; keep stable after state migration
+  resource_group_name = azurerm_resource_group.common["common"].name
+  # Storage account locations are immutable. This account already backs the
+  # remote state, so keep its existing location instead of recreating it when
+  # the resource-group location changes.
+  location                 = "polandcentral"
   account_tier             = "Standard"
   account_replication_type = "LRS"
   # Bezpieczeństwo
@@ -31,35 +35,6 @@ resource "azurerm_storage_account" "backend" {
   })
 }
 
-# Lifecycle management -- warstwy dla stanu i jego wersji (nigdy Archive dla bieżącego stanu)
-resource "azurerm_storage_management_policy" "backend" {
-  storage_account_id = azurerm_storage_account.backend.id
-
-  rule {
-    name    = "tfstate-tiering"
-    enabled = true
-    filters {
-      blob_types   = ["blockBlob"]
-      prefix_match = ["tfstate/"]
-    }
-    actions {
-      # Bieżący stan: Cool po 30 dniach bez odczytu (powrót do Hot przy odczycie),
-      # Cold po 90 dniach bez odczytu -- zawsze dostępny online dla `tofu plan`
-      base_blob {
-        tier_to_cool_after_days_since_last_access_time_greater_than = 30
-        auto_tier_to_hot_from_cool_enabled                          = true
-        tier_to_cold_after_days_since_last_access_time_greater_than = 90
-      }
-      # Stare wersje: od razu Cold, po 14 dniach Archive, usunięcie po 194 dniach
-      # (14 + 180 -- minimalny okres przechowywania w Archive, bez opłaty za wcześniejsze usunięcie)
-      version {
-        tier_to_cold_after_days_since_creation_greater_than = 0
-        change_tier_to_archive_after_days_since_creation    = 14
-        delete_after_days_since_creation                    = 194
-      }
-    }
-  }
-}
 
 # Kontener dla state files
 resource "azurerm_storage_container" "backend" {
