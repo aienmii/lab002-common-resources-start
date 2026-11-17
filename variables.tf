@@ -11,17 +11,18 @@ variable "common_resource_groups" {
   `labs` -- numery labów korzystających z grupy (trafia do tagu).
   EOT
   type = map(object({
-    enabled = bool
-    labs    = string
+    enabled  = bool
+    labs     = string
+    location = string
   }))
   nullable = false
   default = {
-    common     = { enabled = true, labs = "2-11" }
-    basic      = { enabled = true, labs = "1-4" }
-    function   = { enabled = true, labs = "5-6" }
-    vm         = { enabled = true, labs = "7-9" }
-    advanced   = { enabled = true, labs = "10" }
-    industry40 = { enabled = true, labs = "11" }
+    common     = { enabled = true, labs = "2-11", location = "swedencentral" }
+    basic      = { enabled = true, labs = "1-4", location = "swedencentral" }
+    function   = { enabled = true, labs = "5-6", location = "polandcentral" }
+    vm         = { enabled = true, labs = "7-9", location = "polandcentral" }
+    advanced   = { enabled = true, labs = "10", location = "polandcentral" }
+    industry40 = { enabled = true, labs = "11", location = "polandcentral" }
   }
   validation {
     condition     = try(var.common_resource_groups["common"].enabled, false)
@@ -87,4 +88,17 @@ variable "contact_emails" {
     ])
     error_message = "Podaj co najmniej jeden poprawny adres e-mail, np. imie.nazwisko@student.pk.edu.pl."
   }
+}
+variable "log_retention_days" {
+  description = "Retencja logów w dniach"
+  type        = number
+  nullable    = false
+  default     = 30
+}
+
+variable "log_daily_quota_gb" {
+  description = "Dzienny limit ingestii logów w GB"
+  type        = number
+  nullable    = false
+  default     = 0.2
 }
